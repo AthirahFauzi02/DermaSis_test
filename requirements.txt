@@ -2,8 +2,6 @@ imageio==2.31.1
 Pillow==9.5.0
 pandas==2.0.3
 streamlit==1.26.0
-smtplib
-ssl
 torch==2.0.1+cu118
 torchvision==0.15.2+cu118
 email.mime.text
