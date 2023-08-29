@@ -1,4 +1,3 @@
-import sqlite3
 import io
 from PIL import Image
 from database import user_info_table, add_user, login_user, is_user_exist, image_detail_table, insert_image_detail
