@@ -2,8 +2,8 @@ imageio==2.31.1
 Pillow==9.5.0
 pandas==2.0.3
 streamlit==1.26.0
-torch==2.0.1+cu118
-torchvision==0.15.2+cu118
+torch==2.0.1
+torchvision==0.15.2
 email.mime.text
 MIMEText
 email.mime.multipart
