@@ -1,18 +1,27 @@
 io
 PIL
 Image
-database import user_info_table, add_user, login_user, is_user_exist, image_detail_table, insert_image_detail
-pandas as pd
+database
+user_info_table
+add_user
+login_user
+is_user_exist
+image_detail_table
+insert_image_detail
+pandas
+pd
 random
 string
 smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.message import EmailMessage
-import ssl
-import torch
-import torchvision
-from torchvision import transforms, datasets, models
-from PIL import Image
-import torch.nn as nn
-import torch.optim as optim
+email.mime.text
+MIMEText
+email.mime.multipart
+MIMEMultipart
+email.message
+EmailMessage
+ssl
+torch
+torchvision
+transforms, datasets, models
+torch.nn as nn
+torch.optim as optim
