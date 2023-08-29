@@ -22,6 +22,8 @@ EmailMessage
 ssl
 torch
 torchvision
-transforms, datasets, models
+transforms
+datasets
+models
 torch.nn as nn
 torch.optim as optim
