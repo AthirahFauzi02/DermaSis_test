@@ -4,10 +4,3 @@ pandas==2.0.3
 streamlit==1.26.0
 torch==2.0.1
 torchvision==0.15.2
-email.mime.text
-MIMEText
-email.mime.multipart
-MIMEMultipart
-email.message
-EmailMessage
-
