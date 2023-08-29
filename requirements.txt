@@ -1,10 +1,10 @@
 io
-from PIL import Image
-from database import user_info_table, add_user, login_user, is_user_exist, image_detail_table, insert_image_detail
-import pandas as pd
-import random
-import string
-import smtplib
+PIL import Image
+database import user_info_table, add_user, login_user, is_user_exist, image_detail_table, insert_image_detail
+pandas as pd
+random
+string
+smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.message import EmailMessage
