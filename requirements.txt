@@ -1,5 +1,6 @@
 io
-PIL import Image
+PIL
+Image
 database import user_info_table, add_user, login_user, is_user_exist, image_detail_table, insert_image_detail
 pandas as pd
 random
