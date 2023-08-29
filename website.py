@@ -62,22 +62,22 @@ def image_transform(image):
     num_classes = 10
 
     # # DenseNet
-    model_path = 'densenet169.pth'
-    #Define the model architecture
-    loaded_model = models.densenet169(pretrained=False)
-    loaded_model.classifier = torch.nn.Linear(1664, num_classes)
-    # Load the model state_dict from the file
-    loaded_model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-    loaded_model.eval()
+    # model_path = 'densenet169.pth'
+    # #Define the model architecture
+    # loaded_model = models.densenet169(pretrained=False)
+    # loaded_model.classifier = torch.nn.Linear(1664, num_classes)
+    # # Load the model state_dict from the file
+    # loaded_model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    # loaded_model.eval()
 
 
     #Alexnet
-    # model_path = 'alexnet_model.pth'
-    # loaded_model = models.alexnet(pretrained=False)
-    # loaded_model.classifier[6] = torch.nn.Linear(4096, num_classes)  # Modify the classifier for your specific number of classes
-    # state_dict = torch.load(model_path, map_location=torch.device('cpu'))  # Load on CPU
-    # loaded_model.load_state_dict(state_dict)
-    # loaded_model.eval()
+    model_path = 'alexnet_model.pth'
+    loaded_model = models.alexnet(pretrained=False)
+    loaded_model.classifier[6] = torch.nn.Linear(4096, num_classes)  # Modify the classifier for your specific number of classes
+    state_dict = torch.load(model_path, map_location=torch.device('cpu'))  # Load on CPU
+    loaded_model.load_state_dict(state_dict)
+    loaded_model.eval()
 
     #vgg19
     # model_path = 'vgg19.pth'
