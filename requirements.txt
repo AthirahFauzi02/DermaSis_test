@@ -1,4 +1,4 @@
-io
+imageio==2.31.1
 PIL
 Image
 database
