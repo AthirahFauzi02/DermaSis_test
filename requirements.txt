@@ -25,5 +25,7 @@ torchvision
 transforms
 datasets
 models
-torch.nn as nn
-torch.optim as optim
+torch.nn
+nn
+torch.optim
+optim
