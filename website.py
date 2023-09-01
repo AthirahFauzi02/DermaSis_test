@@ -57,6 +57,13 @@ def update_user_info(name, username, email, password):
     conn.commit()
     st.success("Your information has been updated")
 
+def is_valid_password(password):
+    # Password should have at least 8 characters
+    # It should contain at least one uppercase letter, one lowercase letter, one digit, and one special character
+    # You can modify the regex pattern to fit your specific requirements
+    pattern = r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+    return re.match(pattern, password) is not None
+
 
 def image_transform(image):
     accuracy_threshold = 0.5
@@ -124,34 +131,31 @@ def image_transform(image):
 def Homepage():
     image_detail_table()     
     if st.session_state.user is None:
-        # st.title("Welcome to ClassiDerm🔬")
-        st.error("You must be logged in to access this page,")
+        st.error("You must be logged in to access this page.")
         Login()
         return
-    
+
     st.title("Hello Dermatologist👩‍⚕️!")
     st.subheader("Welcome to ClassiDerm🔬")
     st.write("A Skin Disease Diagnosis System")
 
-    
-    file = st.file_uploader("Choose a file", type = ["jpg", "jpeg", "png"], key = "fileUploader", help = "Only JPG, JPEG and PNG file formats are supported.")
-    
+    file = st.file_uploader("Choose a file", type=["jpg", "jpeg", "png"], key="fileUploader", help="Only JPG, JPEG and PNG file formats are supported.")
+
     if file is None:
         st.text("Please upload an image file 😎")
+    elif file.type not in ["image/jpeg", "image/jpg", "image/png"]:
+        st.error("Unsupported file format. Please upload a JPG, JPEG, or PNG file.")
     else:
-        # st.session_state.upload_image = True
         image_data = file.read()
         image = Image.open(io.BytesIO(image_data))
-        
-        # if st.button("Detect Skin Disease🔎"):                 
-        st.image(image, caption = "Uploaded Image", use_column_width=True)
+
+        st.image(image, caption="Uploaded Image", use_column_width=True)
         predicted_class, accuracy = image_transform(image)
         st.write(f"Detected disease: **{predicted_class}**")
-        # disease_name = predicted_class
-        st.write(f"Accuracy: **{accuracy:.2f}**")    
+        st.write(f"Accuracy: **{accuracy:.2f}**")
         comment = st.text_input("Comments/Description")
-        # if st.session_state.upload_image:
-        if st.button("Save Disease Details"):            
+
+        if st.button("Save Disease Details"):
             insert_image_detail(predicted_class, comment, image)
             st.success("Successfully Updated!")
 
@@ -200,14 +204,21 @@ def Account():
         username = st.text_input(f"Username({user_data[0]})", user_data[1])
         email = st.text_input(f"Email ({user_data[0]})", user_data[2])
         password = st.text_input(f"Password ({user_data[0]})", user_data[3], type="password")
-        # token = st.text_input(f"reset token ({user_data[0]})", user_data[4])
-
-        if st.checkbox("Confirm Update"):
-            if st.button("Update"):
-                update_user_info(name, username, email, password)
-                st.success("Information updated successfully!")
-            else:
-                st.warning("Click Confirm Update to confirm your update")
+        
+        # Define password requirements
+        password_requirements = "Password must have at least 8 characters, including one uppercase letter, one lowercase letter, one digit, and one special character."
+        
+        if not name or not username or not email or not password:
+            st.error("Please fill in all the required fields.")
+        elif not re.match(r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", password):
+            st.error(password_requirements)
+        else:
+            if st.checkbox("Confirm Update"):
+                if st.button("Update"):
+                    update_user_info(name, username, email, password)
+                    st.success("Information updated successfully!")
+                else:
+                    st.warning("Click Confirm Update to confirm your update")
     else:
         st.error("User not found")
 
@@ -392,23 +403,19 @@ def reset_password():
             st.error("Please fill in all the required fields.")
         else:
             if reset_token == saved_reset_token:
-                # Compare new password and confirm password
+                # Compare new password and confirm password                
                 if new_password == confirm_password:
+                    if not is_valid_password(new_password):
+                        st.error("Password must have at least 8 characters, including one uppercase letter, one lowercase letter, one digit, and one special character.")
                     # Update the user's password with the new password
-                    update_password_in_database(email_to_reset, new_password)
-                    clear_reset_token_in_database(email_to_reset)
-                    st.success("Password reset successfully. You can now login with your new password.")
+                    else:
+                        update_password_in_database(email_to_reset, new_password)
+                        clear_reset_token_in_database(email_to_reset)
+                        st.success("Password reset successfully. You can now login with your new password.")
                 else:
                     st.warning("Password and confirm password do not match. Please try again.")
             else:
                 st.warning("Invalid reset token or password mismatch. Please try again.")
-
-def is_valid_password(password):
-    # Password should have at least 8 characters
-    # It should contain at least one uppercase letter, one lowercase letter, one digit, and one special character
-    # You can modify the regex pattern to fit your specific requirements
-    pattern = r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-    return re.match(pattern, password) is not None
     
 def Signup_account():
     st.title("Welcome to ClassiDerm🔬")
