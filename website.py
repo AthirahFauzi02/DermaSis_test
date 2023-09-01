@@ -17,6 +17,7 @@ from torchvision import transforms, datasets, models
 from PIL import Image
 import torch.nn as nn
 import torch.optim as optim
+import re
 
 if 'user' not in st.session_state:
     st.session_state.user = None
@@ -58,7 +59,7 @@ def update_user_info(name, username, email, password):
 
 
 def image_transform(image):
-    accuracy_threshold = 0.4
+    accuracy_threshold = 0.5
     num_classes = 10
 
     # # DenseNet
@@ -123,12 +124,13 @@ def image_transform(image):
 def Homepage():
     image_detail_table()     
     if st.session_state.user is None:
-        st.title("Welcome to DermaSis🔎")
+        # st.title("Welcome to ClassiDerm🔬")
         st.error("You must be logged in to access this page,")
+        Login()
         return
     
     st.title("Hello Dermatologist👩‍⚕️!")
-    st.subheader("Welcome to DermaSis🔎")
+    st.subheader("Welcome to ClassiDerm🔬")
     st.write("A Skin Disease Diagnosis System")
 
     
@@ -144,9 +146,9 @@ def Homepage():
         # if st.button("Detect Skin Disease🔎"):                 
         st.image(image, caption = "Uploaded Image", use_column_width=True)
         predicted_class, accuracy = image_transform(image)
-        st.write(f"Detected disease: {predicted_class}")
+        st.write(f"Detected disease: **{predicted_class}**")
         # disease_name = predicted_class
-        st.write(f"Accuracy: {accuracy:.2f}")    
+        st.write(f"Accuracy: **{accuracy:.2f}**")    
         comment = st.text_input("Comments/Description")
         # if st.session_state.upload_image:
         if st.button("Save Disease Details"):            
@@ -155,7 +157,7 @@ def Homepage():
 
 def Image_list():   
     if st.session_state.user is None:
-        st.title("Welcome to DermaSis🔎")
+        st.title("Welcome to ClassiDerm🔬")
         st.error("You must be logged in to access this page,")
         return
     
@@ -167,6 +169,7 @@ def Image_list():
 
     st.title("Uploaded Skin Disease Image📎")
     for id, disease_name, comment, image_data in rows:
+        st.write("_________________________________________________________________________")
         st.subheader(f"Uploaded Image {id}")        
         st.write(f"Detected disease: {disease_name}")
         st.write(f"Comment: {comment}")
@@ -180,7 +183,7 @@ def Image_list():
 def Account():
     user_info_table()    
     if st.session_state.user is None:
-        st.title("Welcome to DermaSis🔎")
+        st.title("Welcome to ClassiDerm🔬")
         st.error("You must be logged in to access this page")
         return
 
@@ -197,6 +200,7 @@ def Account():
         username = st.text_input(f"Username({user_data[0]})", user_data[1])
         email = st.text_input(f"Email ({user_data[0]})", user_data[2])
         password = st.text_input(f"Password ({user_data[0]})", user_data[3], type="password")
+        # token = st.text_input(f"reset token ({user_data[0]})", user_data[4])
 
         if st.checkbox("Confirm Update"):
             if st.button("Update"):
@@ -207,9 +211,9 @@ def Account():
     else:
         st.error("User not found")
 
-def generate_reset_token():
-    reset_token = random.randint(100000, 999999)    
-    return reset_token
+# def generate_reset_token():
+#     reset_token = random.randint(100000, 999999)    
+#     return reset_token
 
 def save_reset_token_in_database(email, reset_token):
     conn = sqlite3.connect('skindiseases.db')  # Replace 'your_database.db' with your SQLite database file path
@@ -217,7 +221,6 @@ def save_reset_token_in_database(email, reset_token):
     # Execute an SQL query to update the reset_token field for the user's email
     cursor.execute("UPDATE user_info_table SET reset_token=? WHERE email=?", (reset_token, email))
     conn.commit()
-
     conn.close()
 
 def send_reset_email(to_email, reset_token):
@@ -240,7 +243,7 @@ def send_reset_email(to_email, reset_token):
     body = f'This is your reset token: {reset_token}'
     # msg.attach(MIMEText(body, 'plain'))
     msg.set_content(body)
-    save_reset_token_in_database(to_email, reset_token)
+    # save_reset_token_in_database(to_email, reset_token)
     # Add SSL (layer of security)
     context = ssl.create_default_context()
     # Connect to SMTP server and send email
@@ -258,9 +261,7 @@ def is_valid_reset_token(email, token):
     cursor.execute("SELECT reset_token FROM user_info_table WHERE email = ?", (email,))
     stored_token = cursor.fetchone()
 
-    conn.close()    
-
-    # Check if the provided token matches the stored token
+    conn.close()    # Check if the provided token matches the stored token
     # return token == stored_token
     if stored_token:
         return stored_token[0]  # Return the reset token as a string
@@ -303,7 +304,7 @@ def clear_reset_token_in_database(email):
 
 def Login():
     if not st.session_state.login:
-        st.subheader("Welcome to DermaSis🔎")
+        st.subheader("Welcome to ClassiDerm🔬")
         st.title("Login👋")
         username = st.text_input("Username👩‍⚕️")
         password = st.text_input("Password🔑", type='password')
@@ -314,38 +315,67 @@ def Login():
             # hashed_password = make_hashes(password)
             cursor.execute('SELECT username AND password FROM user_info_table WHERE username = ? AND password = ?', (username, password))
             user_data = cursor.fetchone()
-
-            if user_data:
-                # stored_password = user_data[2]  # Index 2 corresponds to the password column
-                # hashed_pass = make_hashes(password)
-                result = login_user(username, password)
-                if result:
-                    st.session_state.user = username
-                    st.success("Logged in as {}".format(username))
-
-                    # return True
-                else:
-                    st.warning("Incorrect email or password")
+            if not username or not password:
+                st.error("Please fill in all the required fields.")
             else:
-                st.warning("User not found")
+                if user_data:
+                    # stored_password = user_data[2]  # Index 2 corresponds to the password column
+                    # hashed_pass = make_hashes(password)
+                    result = login_user(username, password)
+                    if result:
+                        st.session_state.user = username
+                        st.success("Logged in as {}".format(username))
+
+                        # return True
+                    else:
+                        st.warning("Incorrect email or password")
+                else:
+                    st.warning("User not found")
 
         st.write("Do not have account? Please signup")
 
+def is_email_in_database(email):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT email FROM user_info_table WHERE email = ?", (email,))
+    result = cursor.fetchone()
+    return result is not None
+
          # Forgot Password
+
+def get_reset_token_from_database(email_to_reset):
+    conn = sqlite3.connect('skindiseases.db')
+    cursor = conn.cursor()
+
+    # Execute an SQL query to fetch the reset token for the provided email
+    cursor.execute("SELECT reset_token FROM user_info_table WHERE email=?", (email_to_reset,))
+    result = cursor.fetchone()
+
+    # Close the database connection
+    conn.close()
+
+    if result:
+        return result[0]  # Return the reset token
+    else:
+        return None
+    
 def reset_password():            
     st.title("Password Reset")
     email_to_reset = st.text_input("Enter your Email:")
     if st.button("Forgot Password"):
-        # Check if the email exists in your database
         if email_to_reset:
-            # Generate a unique reset token and save it in the database
-            reset_token = generate_reset_token()                
-            # Send an email with the reset link
-            send_reset_email(email_to_reset, reset_token)
-            
-            st.success("Password reset link sent to your email. Please check your inbox.")
+            # Check if the email exists in your database
+            if is_email_in_database(email_to_reset):
+                # Generate a unique reset token and save it in the database
+                reset_token = random.randint(100000, 999999)
+                save_reset_token_in_database(email_to_reset, reset_token)
+                # Send an email with the reset link
+                send_reset_email(email_to_reset, reset_token)
+                st.success("Password reset link sent to your email. Please check your inbox.")
+            else:
+                st.warning("Email not found. Please check the email address.")
         else:
-            st.warning("Email not found. Please check the email address.")
+            st.warning("Please enter your email address.")
 
 # Password Reset Page
 # In your password reset logic
@@ -357,36 +387,53 @@ def reset_password():
 
     if st.button("Reset Password"):
         # Check if the reset token is valid and associated with the user's email address
-        if is_valid_reset_token(email_to_reset, reset_token):
-            # Update the user's password with the new password
-            update_password_in_database(email_to_reset, new_password)
-            clear_reset_token_in_database(email_to_reset)
-            st.success("Password reset successfully. You can now login with your new password.")
-            st.session_state.reset_password = False  # Reset reset_password to False
+        saved_reset_token = get_reset_token_from_database(email_to_reset)
+        if not reset_token or not new_password or not confirm_password:
+            st.error("Please fill in all the required fields.")
         else:
-            st.warning("Invalid reset token or password mismatch. Please try again.")
+            if reset_token == saved_reset_token:
+                # Compare new password and confirm password
+                if new_password == confirm_password:
+                    # Update the user's password with the new password
+                    update_password_in_database(email_to_reset, new_password)
+                    clear_reset_token_in_database(email_to_reset)
+                    st.success("Password reset successfully. You can now login with your new password.")
+                else:
+                    st.warning("Password and confirm password do not match. Please try again.")
+            else:
+                st.warning("Invalid reset token or password mismatch. Please try again.")
 
+def is_valid_password(password):
+    # Password should have at least 8 characters
+    # It should contain at least one uppercase letter, one lowercase letter, one digit, and one special character
+    # You can modify the regex pattern to fit your specific requirements
+    pattern = r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+    return re.match(pattern, password) is not None
     
 def Signup_account():
-    st.title("Welcome to DermaSis🔎")
+    st.title("Welcome to ClassiDerm🔬")
     st.subheader("Create New Account")
     new_name = st.text_input("Name")
     new_user = st.text_input("Username")
     new_email = st.text_input("Email Address")
-    new_password = st.text_input("Password", type='password', key = ("user_password"))
+    new_password = st.text_input("Password", type='password', key="user_password")
     reset_token = " "
 
     if st.button("Signup"):
-        user_info_table()
-        if is_user_exist(new_user, new_email):
-            st.error("Username or Email already exist. Please choose different Username or Email😊")
-
+        if not new_name or not new_user or not new_email or not new_password:
+            st.error("Please fill in all the required fields.")
+        elif not is_valid_password(new_password):
+            st.error("Password must have at least 8 characters, including one uppercase letter, one lowercase letter, one digit, and one special character.")
         else:
-            add_user(new_name, new_user, new_email, new_password, reset_token)
-            st.success("You have successfully created an Account")
-            st.info("Go to login page to login to your account")
+            user_info_table()
+            if is_user_exist(new_user, new_email):
+                st.error("Username or Email already exists. Please choose a different Username or Email😊")
+            else:
+                add_user(new_name, new_user, new_email, new_password, reset_token)
+                st.success("You have successfully created an Account")
+                st.info("Go to the login page to log in to your account")
 
-    st.write("If you have account, please login")
+    st.write("If you have an account, please login")
 
 def logout():
     st.session_state.user = None
