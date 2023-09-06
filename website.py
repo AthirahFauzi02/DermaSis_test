@@ -154,6 +154,7 @@ def Homepage():
         st.write(f"Detected disease: **{predicted_class}**")
         st.write(f"Accuracy: **{accuracy:.2f}**")
         comment = st.text_input("Comments/Description")
+        st.write("Disclaimer: The skin disease detection tool provided on this platform is intended for informational purposes only and should not be considered a substitute for professional medical advice, diagnosis, or treatment. This tool is not designed to provide a definitive diagnosis of any skin condition")
 
         if st.button("Save Disease Details"):
             insert_image_detail(predicted_class, comment, image)
